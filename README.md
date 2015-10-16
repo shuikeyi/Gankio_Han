@@ -1,6 +1,9 @@
 # Gankio_Han
 Android下根据Material Design设计的GankIO客户端
 
+#首先感谢drakeet之前做的客户端，项目地址https://github.com/drakeet/Meizhi
+我做这个客户端，主要是觉得资讯的表现方式不符合我要观看的重点（我是有妹子的，所以注重技术^_^）</br>
+很多方面，比如视频全屏等问题，是参考了**drakeet**的客户端才知道如何解决，在此先感谢**drakeet**
 ##效果预览
 ![image](https://github.com/specialshoot/Gankio_Han/blob/master/image-folder/1.jpg)
 ![image](https://github.com/specialshoot/Gankio_Han/blob/master/image-folder/2.jpg)
