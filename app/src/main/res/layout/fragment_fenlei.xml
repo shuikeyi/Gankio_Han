@@ -1,0 +1,29 @@
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/meizhibg"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.example.hanzh.gankio_han.fragment.fenleiFragment">
+
+    <!--<android.support.v4.widget.SwipeRefreshLayout-->
+        <!--android:id="@+id/id_swiperefreshlayout"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--app:layout_behavior="@string/appbar_scrolling_view_behavior">-->
+    <com.example.hanzh.gankio_han.widget.MultiSwipeRefreshLayout
+        android:id="@+id/id_swiperefreshlayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/id_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </com.example.hanzh.gankio_han.widget.MultiSwipeRefreshLayout>
+    <!--</android.support.v4.widget.SwipeRefreshLayout>-->
+
+</android.support.design.widget.CoordinatorLayout>
