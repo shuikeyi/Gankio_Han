@@ -8,8 +8,10 @@
     android:fitsSystemWindows="true"
     tools:context="com.example.hanzh.gankio_han.VideoActivity">
 
-    <android.support.design.widget.AppBarLayout android:layout_height="wrap_content"
-        android:layout_width="match_parent" android:theme="@style/AppTheme.AppBarOverlay">
+    <android.support.design.widget.AppBarLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/video_toolbar"
@@ -31,5 +33,15 @@
         android:src="@android:drawable/ic_menu_revert"
         app:backgroundTint="@color/main_red_dark"
         app:rippleColor="@color/main_red_light" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/video_fab_open"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|left"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@android:drawable/ic_menu_set_as"
+        app:backgroundTint="@color/main_blue_dark"
+        app:rippleColor="@color/main_blue_light" />
 
 </android.support.design.widget.CoordinatorLayout>

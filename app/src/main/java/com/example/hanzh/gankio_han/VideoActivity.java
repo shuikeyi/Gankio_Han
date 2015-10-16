@@ -1,12 +1,13 @@
 package com.example.hanzh.gankio_han;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,8 +15,12 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.MediaController;
+import android.widget.Toast;
 
 import com.daimajia.numberprogressbar.NumberProgressBar;
+
+import java.io.InputStream;
 
 import cn.sharesdk.framework.ShareSDK;
 import cn.sharesdk.onekeyshare.OnekeyShare;
@@ -23,11 +28,12 @@ import cn.sharesdk.onekeyshare.OnekeyShare;
 public class VideoActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Toolbar toolbar;
-    private FloatingActionButton fab;
+    private FloatingActionButton fab,fab_open;
     private WebView videoWebView;
     private NumberProgressBar mProgressbar;
     private String mUrl;
     private String mDesc;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +49,7 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     private void initView(){
         toolbar = (Toolbar) findViewById(R.id.video_toolbar);
         fab = (FloatingActionButton) findViewById(R.id.video_fab);
+        fab_open=(FloatingActionButton)findViewById(R.id.video_fab_open);
         videoWebView=(WebView)findViewById(R.id.videoWebView);
         mProgressbar=(NumberProgressBar)findViewById(R.id.video_number_progress_bar);
     }
@@ -51,6 +58,8 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         toolbar.setTitle(mDesc);
         setSupportActionBar(toolbar);
         fab.setOnClickListener(this);
+        fab_open.setOnClickListener(this);
+
         if(!mUrl.equals("")){
             WebSettings settings = videoWebView.getSettings();
             settings.setJavaScriptEnabled(true);
@@ -63,6 +72,7 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             settings.setCacheMode(WebSettings.LOAD_DEFAULT);
             settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
             settings.setSupportZoom(true);
+            settings.setBuiltInZoomControls(true);
             settings.setUseWideViewPort(true);
             videoWebView.setWebChromeClient(new ChromeClient());
             videoWebView.setWebViewClient(new LoveClient());
@@ -70,7 +80,7 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    private class ChromeClient extends WebChromeClient {
+    private class ChromeClient extends WebChromeClient implements MediaPlayer.OnCompletionListener {
 
         @Override public void onProgressChanged(WebView view, int newProgress) {
             super.onProgressChanged(view, newProgress);
@@ -79,9 +89,17 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             else { mProgressbar.setVisibility(View.VISIBLE); }
         }
 
-
         @Override public void onReceivedTitle(WebView view, String title) {
             super.onReceivedTitle(view, title);
+        }
+
+        @Override public void onCompletion(MediaPlayer mp) {
+            if (mp != null) {
+                if (mp.isPlaying()) mp.stop();
+                mp.reset();
+                mp.release();
+                mp = null;
+            }
         }
     }
 
@@ -90,6 +108,42 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             if (url != null) view.loadUrl(url);
             return true;
+        }
+
+        @Override public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            // 这些视频需要hack CSS才能达到全屏播放的效果
+            if (url.contains("www.vmovier.com")) {
+                injectCSS("vmovier.css");
+            }
+            else if (url.contains("video.weibo.com")) {
+                injectCSS("weibo.css");
+            }
+            else if (url.contains("m.miaopai.com")) {
+                injectCSS("miaopai.css");
+            }
+        }
+    }
+
+    // Inject CSS method: read style.css from assets folder
+    // Append stylesheet to document head
+    private void injectCSS(String filename) {
+        try {
+            InputStream inputStream = VideoActivity.this.getAssets().open(filename);
+            byte[] buffer = new byte[inputStream.available()];
+            inputStream.read(buffer);
+            inputStream.close();
+            String encoded = Base64.encodeToString(buffer, Base64.NO_WRAP);
+            videoWebView.loadUrl("javascript:(function() {" +
+                    "var parent = document.getElementsByTagName('head').item(0);" +
+                    "var style = document.createElement('style');" +
+                    "style.type = 'text/css';" +
+                    // Tell the browser to BASE64-decode the string into your script !!!
+                    "style.innerHTML = window.atob('" + encoded + "');" +
+                    "parent.appendChild(style)" +
+                    "})()");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -106,6 +160,18 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         switch (v.getId()){
             case R.id.video_fab:
                 VideoActivity.this.finish();
+                break;
+            case R.id.video_fab_open:
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                Uri uri = Uri.parse(mUrl);
+                intent.setData(uri);
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                }
+                else {
+                    Toast.makeText(VideoActivity.this, "打开网站失败", Toast.LENGTH_SHORT).show();
+                }
                 break;
             default:
                 break;

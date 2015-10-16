@@ -51,8 +51,8 @@ public class TodayActivity extends AppCompatActivity implements View.OnClickList
     private String mVideoPreviewUrl;    //Video的Url
     private String mPictureUrl;
     private List<Gank> mGankList;
-    private int isSecond=0; //DateTimerPicker两次
-    private boolean kong=false; //判断当前页是否为空
+    private int isSecond = 0; //DateTimerPicker两次
+    private boolean kong = false; //判断当前页是否为空
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,9 +62,9 @@ public class TodayActivity extends AppCompatActivity implements View.OnClickList
         month = Calendar.getInstance().get(Calendar.MONTH) + 1;
         day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
         mUrl = mUrlHead + year + "/" + month + "/" + day;
-        System.out.println("mUrl : " +mUrl);
-        mGankList=new ArrayList<>();
-        mAdapter=new GankListAdapter(TodayActivity.this);
+        System.out.println("mUrl : " + mUrl);
+        mGankList = new ArrayList<>();
+        mAdapter = new GankListAdapter(TodayActivity.this);
         initView();
         initViewAction();
         getData(mUrl);
@@ -102,7 +102,7 @@ public class TodayActivity extends AppCompatActivity implements View.OnClickList
                 TodayActivity.this.finish();
                 break;
             case R.id.header_appbar:
-                if(kong==false) {
+                if (kong == false) {
                     Intent intent = new Intent();
                     intent.setClass(TodayActivity.this, VideoActivity.class);
                     Bundle mBundle = new Bundle();
@@ -110,7 +110,7 @@ public class TodayActivity extends AppCompatActivity implements View.OnClickList
                     mBundle.putString("Desc", mGankList.get(0).getDesc());
                     intent.putExtras(mBundle);
                     startActivity(intent);
-                }else {
+                } else {
                     Toast.makeText(TodayActivity.this, "没有数据,请选择别日或刷新", Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -122,7 +122,7 @@ public class TodayActivity extends AppCompatActivity implements View.OnClickList
     private void getData(String url) {
         System.out.println("进入getData");
         mGankList.clear();
-        mGankList=new ArrayList<>();
+        mGankList = new ArrayList<>();
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(url).build();
         //enqueue开启一步线程访问网络
@@ -225,7 +225,7 @@ public class TodayActivity extends AppCompatActivity implements View.OnClickList
                 getData(mUrl);
                 break;
             case R.id.today_action_choose:
-                DatePickerDialog dlg = new DatePickerDialog(this, this, year, month-1, day);
+                DatePickerDialog dlg = new DatePickerDialog(this, this, year, month - 1, day);
                 dlg.show();
                 break;
             default:
@@ -236,34 +236,34 @@ public class TodayActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onDateSet(DatePicker view, int yearOfToday, int monthOfYear, int dayOfMonth) {
-        if(isSecond!=1){
-            isSecond++;
-        }else {
-            isSecond=0;
+
+        if (year == yearOfToday && month == monthOfYear + 1 && day == dayOfMonth) {
+            //Toast.makeText(TodayActivity.this, "时间选择没有改变", Toast.LENGTH_SHORT).show();
+            System.out.println("时间选择没有改变");
+        } else {
             Toast.makeText(TodayActivity.this, "您选择日期:" + yearOfToday + "/" + (monthOfYear + 1) + "/" + dayOfMonth, Toast.LENGTH_SHORT).show();
-            if(year==yearOfToday && month==monthOfYear+1 && day==dayOfMonth){
-                Toast.makeText(TodayActivity.this, "时间选择没有改变", Toast.LENGTH_SHORT).show();
-            }else {
-                year = yearOfToday;
-                month = monthOfYear+1;
-                day = dayOfMonth;
-                todayToolbar.setTitle(year + "/" + month  + "/" + day);
-                mUrl = mUrlHead + year + "/" + month + "/" + day;
-                getData(mUrl);
-            }
+            year = yearOfToday;
+            month = monthOfYear + 1;
+            day = dayOfMonth;
+            todayToolbar.setTitle(year + "/" + month + "/" + day);
+            mUrl = mUrlHead + year + "/" + month + "/" + day;
+            getData(mUrl);
         }
+
     }
 
-    @Override public void onResume() {
+    @Override
+    public void onResume() {
         super.onResume();
     }
 
-
-    @Override public void onPause() {
+    @Override
+    public void onPause() {
         super.onPause();
     }
 
-    @Override public void onDestroy() {
+    @Override
+    public void onDestroy() {
         super.onDestroy();
     }
 

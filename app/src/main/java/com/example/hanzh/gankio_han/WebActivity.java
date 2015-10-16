@@ -1,12 +1,14 @@
 package com.example.hanzh.gankio_han;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +20,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.daimajia.numberprogressbar.NumberProgressBar;
+
+import java.io.InputStream;
 
 import cn.sharesdk.framework.ShareSDK;
 import cn.sharesdk.onekeyshare.OnekeyShare;
@@ -59,29 +63,6 @@ public class WebActivity extends AppCompatActivity implements View.OnClickListen
         fab.setOnClickListener(this);
         web_fab_share.setOnClickListener(this);
 
-//        WebSettings settings = mWebView.getSettings();
-//        settings.setJavaScriptEnabled(true);
-//        settings.setLoadWithOverviewMode(true);
-//        settings.setAppCacheEnabled(true);
-//        settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-//        settings.setSupportZoom(true);
-//        mWebView.setWebChromeClient(new ChromeClient());
-//        mWebView.setWebViewClient(new LoveClient());
-//
-//        mWebView.loadUrl(mUrl);
-
-//        WebSettings settings = mWebView.getSettings();
-//        settings.setJavaScriptEnabled(true);
-//        settings.setLoadWithOverviewMode(true);
-//        settings.setAppCacheEnabled(true);
-//        settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-//        settings.setSupportZoom(true);
-//        settings.setPluginState(WebSettings.PluginState.ON);
-//        settings.setUseWideViewPort(true);
-//        mWebView.setWebChromeClient(new ChromeClient());
-//        mWebView.setWebViewClient(new LoveClient());
-//        mWebView.loadUrl(mUrl);
-
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setAllowFileAccess(true);
@@ -92,7 +73,8 @@ public class WebActivity extends AppCompatActivity implements View.OnClickListen
         settings.setAppCacheEnabled(true);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-        settings.setSupportZoom(true);
+        settings.setSupportZoom(true);  //支持缩放
+        settings.setBuiltInZoomControls(true);  //显示缩放工具
         settings.setUseWideViewPort(true);
         mWebView.setWebChromeClient(new ChromeClient());
         mWebView.setWebViewClient(new LoveClient());
@@ -118,7 +100,7 @@ public class WebActivity extends AppCompatActivity implements View.OnClickListen
         }
     }
 
-    private class ChromeClient extends WebChromeClient {
+    private class ChromeClient extends WebChromeClient implements MediaPlayer.OnCompletionListener {
 
         @Override public void onProgressChanged(WebView view, int newProgress) {
             super.onProgressChanged(view, newProgress);
@@ -127,9 +109,17 @@ public class WebActivity extends AppCompatActivity implements View.OnClickListen
             else { mProgressbar.setVisibility(View.VISIBLE); }
         }
 
-
         @Override public void onReceivedTitle(WebView view, String title) {
             super.onReceivedTitle(view, title);
+        }
+
+        @Override public void onCompletion(MediaPlayer mp) {
+            if (mp != null) {
+                if (mp.isPlaying()) mp.stop();
+                mp.reset();
+                mp.release();
+                mp = null;
+            }
         }
     }
 
@@ -138,6 +128,42 @@ public class WebActivity extends AppCompatActivity implements View.OnClickListen
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             if (url != null) view.loadUrl(url);
             return true;
+        }
+
+        @Override public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            // 这些视频需要hack CSS才能达到全屏播放的效果
+            if (url.contains("www.vmovier.com")) {
+                injectCSS("vmovier.css");
+            }
+            else if (url.contains("video.weibo.com")) {
+                injectCSS("weibo.css");
+            }
+            else if (url.contains("m.miaopai.com")) {
+                injectCSS("miaopai.css");
+            }
+        }
+    }
+
+    // Inject CSS method: read style.css from assets folder
+    // Append stylesheet to document head
+    private void injectCSS(String filename) {
+        try {
+            InputStream inputStream = WebActivity.this.getAssets().open(filename);
+            byte[] buffer = new byte[inputStream.available()];
+            inputStream.read(buffer);
+            inputStream.close();
+            String encoded = Base64.encodeToString(buffer, Base64.NO_WRAP);
+            mWebView.loadUrl("javascript:(function() {" +
+                    "var parent = document.getElementsByTagName('head').item(0);" +
+                    "var style = document.createElement('style');" +
+                    "style.type = 'text/css';" +
+                    // Tell the browser to BASE64-decode the string into your script !!!
+                    "style.innerHTML = window.atob('" + encoded + "');" +
+                    "parent.appendChild(style)" +
+                    "})()");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
